@@ -90,7 +90,8 @@ mod NFT {
         admin: ContractAddress,
         name: felt252,
         symbol: felt252,
-        max_supply: u256
+        max_supply: u256,
+        base_uri: Array<felt252>,
     ) {
         self.max_supply.write(max_supply);
 
@@ -98,6 +99,17 @@ mod NFT {
         ERC721::InternalImpl::initializer(ref unsafe_state, name, symbol);
 
         self.ownable.initializer(admin);
+
+        let base_uri_len = base_uri.len();
+        let mut i = 0;
+        self.base_uri_len.write(base_uri_len);
+        loop {
+            if i >= base_uri.len() {
+                break;
+            }
+            self.base_uri.write(i, *base_uri.at(i));
+            i += 1;
+        }
     }
 
     #[external(v0)]
@@ -302,22 +314,6 @@ mod NFT {
 
         fn totalSupply(self: @ContractState) -> u256 {
             NFTImpl::total_supply(self)
-        }
-
-        fn set_base_uri(ref self: ContractState, base_uri: Array<felt252>) {
-            // check if sender is the owner of the contract
-            self.ownable.assert_only_owner();
-
-            let base_uri_len = base_uri.len();
-            let mut i = 0;
-            self.base_uri_len.write(base_uri_len);
-            loop {
-                if i >= base_uri.len() {
-                    break;
-                }
-                self.base_uri.write(i, *base_uri.at(i));
-                i += 1;
-            }
         }
     }
 }

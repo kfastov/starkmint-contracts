@@ -54,6 +54,4 @@ trait INFT<TContractState> {
     fn maxSupply(self: @TContractState) -> u256;
     fn totalSupply(self: @TContractState) -> u256;
     // method for setting base URI common for all tokens
-    // TODO move this into constructor
-    fn set_base_uri(ref self: TContractState, base_uri: Array<felt252>);
 }

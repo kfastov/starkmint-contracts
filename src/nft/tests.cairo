@@ -1,3 +1,4 @@
+use core::serde::Serde;
 // Import the interface and dispatcher to be able to interact with the contract.
 use super::interface::{
     INFTDispatcher, INFTDispatcherTrait
@@ -18,7 +19,7 @@ use starknet::testing::{set_caller_address, set_contract_address};
 
 // Deploy the contract and return its dispatcher.
 fn deploy(
-    owner: ContractAddress, name: felt252, symbol: felt252, max_supply: u256
+    owner: ContractAddress, name: felt252, symbol: felt252, max_supply: u256, base_uri: Array<felt252>,
 ) -> (INFTDispatcher, IOwnableDispatcher, IUpgradeableDispatcher) {
     // Set up constructor arguments.
     let mut calldata = ArrayTrait::new();
@@ -26,6 +27,7 @@ fn deploy(
     name.serialize(ref calldata);
     symbol.serialize(ref calldata);
     max_supply.serialize(ref calldata);
+    base_uri.serialize(ref calldata);
 
     // Declare and deploy
     let (contract_address, _) = deploy_syscall(
@@ -49,7 +51,7 @@ fn test_deploy() {
     let name = 'Cool Token';
     let symbol = 'COOL';
     let max_supply = 100000;
-    let (contract, ownable, _) = deploy(owner, name, symbol, max_supply);
+    let (contract, ownable, _) = deploy(owner, name, symbol, max_supply, array![]);
 
     assert(contract.name() == name, 'wrong name');
     assert(contract.symbol() == symbol, 'wrong symbol');
@@ -63,15 +65,16 @@ fn test_deploy() {
 fn test_mint() {
     let owner = contract_address_const::<123>();
     set_contract_address(owner);
-    let (contract, _, _) = deploy(owner, 'Token', 'T', 300);
 
-    // set the base URI
     let base_uri = array![
         'ipfs://lllllllllllllooooooooooo',
         'nnnnnnnnnnngggggggggggggggggggg',
         'aaaaddddddrrrrrreeeeeeesssss'
     ];
-    contract.set_base_uri(base_uri.clone());
+
+    let (contract, _, _) = deploy(owner, 'Token', 'T', 300, base_uri.clone());
+
+    // set the base URI
 
     let recipient = contract_address_const::<1>();
     contract.mint(recipient, 100);
@@ -100,7 +103,7 @@ fn test_mint_all_amount() {
     let owner = contract_address_const::<123>();
     set_contract_address(owner);
 
-    let (contract, _, _) = deploy(owner, 'Token', 'T', 300);
+    let (contract, _, _) = deploy(owner, 'Token', 'T', 300, array![]);
 
     let recipient = contract_address_const::<1>();
     contract.mint(recipient, 300);
@@ -113,7 +116,7 @@ fn test_mint_not_admin() {
     let admin = contract_address_const::<1>();
     set_contract_address(admin);
 
-    let (contract, _, _) = deploy(admin, 'Token', 'T', 300);
+    let (contract, _, _) = deploy(admin, 'Token', 'T', 300, array![]);
 
     let not_admin = contract_address_const::<2>();
     set_contract_address(not_admin);
@@ -125,7 +128,7 @@ fn test_mint_not_admin() {
 #[should_panic]
 #[available_gas(2000000000)]
 fn test_mint_too_much() {
-    let (contract, _, _) = deploy(contract_address_const::<123>(), 'Token', 'T', 300);
+    let (contract, _, _) = deploy(contract_address_const::<123>(), 'Token', 'T', 300, array![]);
     contract.mint(get_contract_address(), 301);
 }
 
@@ -136,7 +139,7 @@ fn test_can_upgrade() {
     let owner = contract_address_const::<123>();
     set_contract_address(owner);
 
-    let (contract, _, upgradeable) = deploy(owner, 'Token', 'T', 300);
+    let (contract, _, upgradeable) = deploy(owner, 'Token', 'T', 300, array![]);
 
     // TODO make it work actually
     let new_class_hash = class_hash_const::<234>();

@@ -5,7 +5,8 @@ use super::interface::INFTFactory;
 
 #[starknet::contract]
 mod NFTFactory {
-    use core::starknet::event::EventEmitter;
+    use core::serde::Serde;
+use core::starknet::event::EventEmitter;
 use starknet::{ContractAddress, ClassHash, get_caller_address, deploy_syscall};
     use openzeppelin::access::ownable::Ownable as ownable_component;
     use openzeppelin::upgrades::upgradeable::Upgradeable as upgradeable_component;
@@ -112,6 +113,7 @@ use starknet::{ContractAddress, ClassHash, get_caller_address, deploy_syscall};
                 symbol,
             ];
             max_supply.serialize(ref constructor_calldata);
+            base_uri.serialize(ref constructor_calldata);
 
             // Contract deployment
             let (deployed_address, _) = deploy_syscall(
