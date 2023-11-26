@@ -39,9 +39,15 @@ version = "0.8.0-beta.0"
 source = "git+https://github.com/OpenZeppelin/cairo-contracts.git?tag=v0.8.0-beta.0#4c95981a7178e43730f152c85a92336dc6a22d62"
 
 [[package]]
+name = "snforge_std"
+version = "0.1.0"
+source = "git+https://github.com/foundry-rs/starknet-foundry.git?tag=v0.11.0#5465c41541c44a7804d16318fab45a2f0ccec9e7"
+
+[[package]]
 name = "starkmint_contracts"
 version = "0.1.0"
 dependencies = [
  "alexandria_ascii",
  "openzeppelin",
+ "snforge_std",
 ]
